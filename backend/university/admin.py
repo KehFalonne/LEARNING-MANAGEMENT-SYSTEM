@@ -63,6 +63,8 @@ class DepartmentAdmin(admin.ModelAdmin):
     search_fields = (
         "name",
         "code",
+        "faculty__name",
+        "faculty__code",
     )
 
 
@@ -86,11 +88,14 @@ class ProgrammeAdmin(admin.ModelAdmin):
     search_fields = (
         "name",
         "code",
+        "department__name",
+        "department__code",
     )
 
 
 @admin.register(Level)
 class LevelAdmin(admin.ModelAdmin):
+
     list_display = (
         "name",
         "programme",
@@ -103,6 +108,11 @@ class LevelAdmin(admin.ModelAdmin):
         "is_active",
     )
 
+    search_fields = (
+        "name",
+        "programme__name",
+        "programme__code",
+    )
 
 @admin.register(AcademicSession)
 class AcademicSessionAdmin(admin.ModelAdmin):
@@ -115,6 +125,9 @@ class AcademicSessionAdmin(admin.ModelAdmin):
 
     list_filter = (
         "is_current",
+    )
+    search_fields = (
+    "name",
     )
 
 
@@ -133,3 +146,7 @@ class SemesterAdmin(admin.ModelAdmin):
         "name",
         "is_current",
     )
+    search_fields = (
+    "academic_session__name",
+    )
+
