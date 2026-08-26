@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext";
 import api from "../../api/axios";
@@ -328,6 +329,9 @@ export default function StudentDashboard() {
                                         <th>
                                             Status
                                         </th>
+                                        <th>
+                                            Actions
+                                        </th>
 
                                     </tr>
 
@@ -377,6 +381,14 @@ export default function StudentDashboard() {
                                                         }
                                                     </span>
 
+                                                </td>
+                                                <td>
+                                                    <Link
+                                                        to={`/courses/${course.id}`}
+                                                        className="btn btn-sm btn-outline-primary"
+                                                    >
+                                                        View Course
+                                                    </Link>
                                                 </td>
 
                                             </tr>

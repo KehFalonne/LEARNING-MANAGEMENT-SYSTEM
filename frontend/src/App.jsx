@@ -11,6 +11,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import CourseDetail from "./pages/CourseDetail";
 
 
 function App() {
@@ -44,8 +45,18 @@ function App() {
                             />
                         }
                     />
+                    <Route
+                    path="/courses/:offeringId"
+                    element={
+                        <ProtectedRoute>
+                            <CourseDetail />
+                        </ProtectedRoute>
+                    }
+                    />
 
                 </Routes>
+
+
 
             </AuthProvider>
 
