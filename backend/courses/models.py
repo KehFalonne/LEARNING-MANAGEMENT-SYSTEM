@@ -157,3 +157,79 @@ class CourseTeachingAssignment(models.Model):
             f"{self.course_offering.course.code} - "
             f"{self.lecturer.staff_id}"
         )
+
+class LearningMaterial(models.Model):
+
+    class MaterialType(models.TextChoices):
+        LECTURE_NOTE = "LECTURE_NOTE", "Lecture Note"
+        PRESENTATION = "PRESENTATION", "Presentation"
+        VIDEO = "VIDEO", "Video"
+        DOCUMENT = "DOCUMENT", "Document"
+        LINK = "LINK", "External Link"
+        OTHER = "OTHER", "Other"
+
+    course_offering = models.ForeignKey(
+        CourseOffering,
+        on_delete=models.CASCADE,
+        related_name="learning_materials",
+    )
+
+    title = models.CharField(
+        max_length=200,
+    )
+
+    description = models.TextField(
+        blank=True,
+    )
+
+    material_type = models.CharField(
+        max_length=30,
+        choices=MaterialType.choices,
+        default=MaterialType.LECTURE_NOTE,
+    )
+
+    file = models.FileField(
+        upload_to="learning_materials/",
+        blank=True,
+        null=True,
+    )
+
+    external_url = models.URLField(
+        blank=True,
+        null=True,
+    )
+
+    week = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+    )
+
+    is_published = models.BooleanField(
+        default=False,
+    )
+
+    uploaded_by = models.ForeignKey(
+        "lecturers.Lecturer",
+        on_delete=models.PROTECT,
+        related_name="uploaded_materials",
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+        ordering = [
+            "week",
+            "-created_at",
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.course_offering.course.code} - "
+            f"{self.title}"
+        )

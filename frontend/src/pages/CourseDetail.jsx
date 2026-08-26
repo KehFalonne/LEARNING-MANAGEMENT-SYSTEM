@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import api, { MEDIA_URL } from "../api/axios";
 
-import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 
 
@@ -9,58 +9,92 @@ export default function CourseDetail() {
 
     const { offeringId } = useParams();
 
-    const { user } = useAuth();
-
     const [course, setCourse] = useState(null);
+    const [materials, setMaterials] = useState([]);
 
     const [loading, setLoading] = useState(true);
+    const [materialsLoading, setMaterialsLoading] = useState(true);
 
     const [error, setError] = useState("");
+    const [materialsError, setMaterialsError] = useState("");
 
 
-    useEffect(() => {
+   useEffect(() => {
 
-        const fetchCourse = async () => {
+    const fetchCourse = async () => {
 
-            try {
+        try {
 
-                const token =
-                    localStorage.getItem(
-                        "access_token"
-                    );
+            const token = localStorage.getItem(
+                "access_token"
+            );
 
-                const response = await api.get(
-                    `/courses/student/${offeringId}/`,
-                    {
-                        headers: {
-                            Authorization:
-                                `Bearer ${token}`,
-                        },
-                    }
-                );
+            const response = await api.get(
+                `/courses/student/${offeringId}/`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
 
-                setCourse(response.data);
+            setCourse(response.data);
 
-            } catch (error) {
+        } catch (error) {
 
-                console.error(error);
+            console.error(error);
 
-                setError(
-                    "Unable to load this course."
-                );
+            setError(
+                "Unable to load this course."
+            );
 
-            } finally {
+        } finally {
 
-                setLoading(false);
+            setLoading(false);
 
-            }
-        };
+        }
+    };
 
 
-        fetchCourse();
+    const fetchMaterials = async () => {
 
-    }, [offeringId]);
+        try {
 
+            const token = localStorage.getItem(
+                "access_token"
+            );
+
+            const response = await api.get(
+                `/courses/student/${offeringId}/materials/`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            setMaterials(response.data);
+
+        } catch (error) {
+
+            console.error(error);
+
+            setMaterialsError(
+                "Unable to load learning materials."
+            );
+
+        } finally {
+
+            setMaterialsLoading(false);
+
+        }
+    };
+
+
+    fetchCourse();
+    fetchMaterials();
+
+}, [offeringId]);
 
     if (loading) {
 
@@ -324,103 +358,211 @@ export default function CourseDetail() {
 
 
             {/* LMS SECTIONS */}
+            {/* LEARNING MATERIALS */}
 
-            <div className="row g-4">
+            <div className="card border-0 shadow-sm mb-4">
 
-                <div className="col-md-4">
+                <div className="card-body">
 
-                    <div className="card border-0 shadow-sm h-100">
+                    <div className="d-flex justify-content-between align-items-center mb-4">
 
-                        <div className="card-body">
+                        <div>
 
-                            <i className="bi bi-file-earmark-text fs-2"></i>
+                            <h4 className="fw-bold mb-1">
 
-                            <h5 className="fw-bold mt-3">
+                                <i className="bi bi-file-earmark-text me-2"></i>
+
                                 Learning Materials
-                            </h5>
 
-                            <p className="text-muted">
-                                Access lecture notes,
-                                presentations and other
-                                learning resources.
+                            </h4>
+
+                            <p className="text-muted mb-0">
+
+                                Lecture notes, presentations and
+                                other course resources.
+
                             </p>
-
-                            <button
-                                className="btn btn-outline-primary"
-                                disabled
-                            >
-                                Coming Soon
-                            </button>
 
                         </div>
 
+
+                        <span className="badge text-bg-primary">
+
+                            {materials.length} Materials
+
+                        </span>
+
                     </div>
 
-                </div>
 
+                    {materialsLoading ? (
 
-                <div className="col-md-4">
+                        <div className="text-center py-4">
 
-                    <div className="card border-0 shadow-sm h-100">
-
-                        <div className="card-body">
-
-                            <i className="bi bi-clipboard-check fs-2"></i>
-
-                            <h5 className="fw-bold mt-3">
-                                Assignments
-                            </h5>
-
-                            <p className="text-muted">
-                                View and submit your
-                                course assignments.
-                            </p>
-
-                            <button
-                                className="btn btn-outline-primary"
-                                disabled
+                            <div
+                                className="spinner-border"
+                                role="status"
                             >
-                                Coming Soon
-                            </button>
+
+                                <span className="visually-hidden">
+                                    Loading...
+                                </span>
+
+                            </div>
 
                         </div>
 
-                    </div>
+                    ) : materialsError ? (
 
-                </div>
+                        <div className="alert alert-danger">
 
-
-                <div className="col-md-4">
-
-                    <div className="card border-0 shadow-sm h-100">
-
-                        <div className="card-body">
-
-                            <i className="bi bi-question-circle fs-2"></i>
-
-                            <h5 className="fw-bold mt-3">
-                                Quizzes
-                            </h5>
-
-                            <p className="text-muted">
-                                Take online quizzes and
-                                view your results.
-                            </p>
-
-                            <button
-                                className="btn btn-outline-primary"
-                                disabled
-                            >
-                                Coming Soon
-                            </button>
+                            {materialsError}
 
                         </div>
 
-                    </div>
+                    ) : materials.length === 0 ? (
+
+                        <div className="text-center py-5">
+
+                            <i className="bi bi-folder2-open fs-1 text-muted"></i>
+
+                            <h5 className="mt-3">
+                                No learning materials yet
+                            </h5>
+
+                            <p className="text-muted mb-0">
+
+                                Your lecturer has not published
+                                any materials for this course yet.
+
+                            </p>
+
+                        </div>
+
+                    ) : (
+
+                        <div className="row g-3">
+
+                            {materials.map((material) => (
+
+                                <div
+                                    className="col-md-6"
+                                    key={material.id}
+                                >
+
+                                    <div className="border rounded p-3 h-100">
+
+                                        <div className="d-flex align-items-start">
+
+                                            <div className="me-3">
+
+                                                <i className="bi bi-file-earmark-text fs-2"></i>
+
+                                            </div>
+
+
+                                            <div className="flex-grow-1">
+
+                                                <div className="d-flex justify-content-between">
+
+                                                    <h6 className="fw-bold mb-1">
+
+                                                        {material.title}
+
+                                                    </h6>
+
+                                                    {material.week && (
+
+                                                        <span className="badge text-bg-light">
+
+                                                            Week {material.week}
+
+                                                        </span>
+
+                                                    )}
+
+                                                </div>
+
+
+                                                <span className="badge text-bg-secondary mb-2">
+
+                                                    {material.material_type_display}
+
+                                                </span>
+
+
+                                                {material.description && (
+
+                                                    <p className="text-muted small mb-3">
+
+                                                        {material.description}
+
+                                                    </p>
+
+                                                )}
+
+
+                                                <div>
+
+                                                    {material.file && (
+
+                                                        <a
+                                                            href={
+                                                                material.file?.startsWith("http")
+                                                                    ? material.file
+                                                                    : `${MEDIA_URL}${material.file}`
+                                                            }
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="btn btn-sm btn-outline-primary me-2"
+                                                        >
+
+                                                            <i className="bi bi-eye me-1"></i>
+
+                                                            View File
+
+                                                        </a>
+
+                                                    )}
+
+
+                                                    {material.external_url && (
+
+                                                        <a
+                                                            href={material.external_url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="btn btn-sm btn-outline-primary"
+                                                        >
+
+                                                            <i className="bi bi-box-arrow-up-right me-1"></i>
+
+                                                            Open Link
+
+                                                        </a>
+
+                                                    )}
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            ))}
+
+                        </div>
+
+                    )}
 
                 </div>
 
-            </div>
+            </div>  
+
 
         </div>
 

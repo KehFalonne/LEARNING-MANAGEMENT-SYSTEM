@@ -4,6 +4,7 @@ from .models import (
     Course,
     CourseOffering,
     CourseTeachingAssignment,
+    LearningMaterial,
 )
 
 
@@ -93,4 +94,45 @@ class CourseTeachingAssignmentAdmin(admin.ModelAdmin):
     autocomplete_fields = (
         "course_offering",
         "lecturer",
+    )
+
+
+@admin.register(LearningMaterial)
+class LearningMaterialAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "title",
+        "course_offering",
+        "material_type",
+        "week",
+        "uploaded_by",
+        "is_published",
+        "created_at",
+    )
+
+    list_filter = (
+        "material_type",
+        "is_published",
+        "course_offering__academic_session",
+        "course_offering__semester",
+    )
+
+    search_fields = (
+        "title",
+        "description",
+        "course_offering__course__code",
+        "course_offering__course__title",
+        "uploaded_by__staff_id",
+        "uploaded_by__user__first_name",
+        "uploaded_by__user__last_name",
+    )
+
+    autocomplete_fields = (
+        "course_offering",
+        "uploaded_by",
+    )
+
+    readonly_fields = (
+        "created_at",
+        "updated_at",
     )

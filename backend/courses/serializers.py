@@ -3,6 +3,7 @@ from rest_framework import serializers
 from .models import (
     CourseOffering,
     CourseTeachingAssignment,
+    LearningMaterial,
 )
 
 
@@ -88,3 +89,55 @@ class CourseDetailSerializer(serializers.ModelSerializer):
             "lecturers",
             "is_active",
         )
+class LearningMaterialSerializer(serializers.ModelSerializer):
+
+    material_type_display = serializers.CharField(
+        source="get_material_type_display",
+        read_only=True,
+    )
+
+    uploaded_by_name = serializers.SerializerMethodField()
+
+    file = serializers.SerializerMethodField()
+
+    class Meta:
+        model = LearningMaterial
+
+        fields = (
+            "id",
+            "title",
+            "description",
+            "material_type",
+            "material_type_display",
+            "file",
+            "external_url",
+            "week",
+            "is_published",
+            "uploaded_by_name",
+            "created_at",
+            "updated_at",
+        )
+
+        read_only_fields = (
+            "id",
+            "uploaded_by_name",
+            "created_at",
+            "updated_at",
+        )
+
+    def get_uploaded_by_name(self, obj):
+        return obj.uploaded_by.user.get_full_name()
+
+    def get_file(self, obj):
+
+        if not obj.file:
+            return None
+
+        request = self.context.get("request")
+
+        if request:
+            return request.build_absolute_uri(
+                obj.file.url
+            )
+
+        return obj.file.url
