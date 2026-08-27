@@ -3,6 +3,11 @@ from rest_framework import serializers
 from .models import Grade
 
 
+from rest_framework import serializers
+
+from .models import Grade
+
+
 class GradeSerializer(serializers.ModelSerializer):
 
     student_id = serializers.CharField(
@@ -57,6 +62,8 @@ class GradeSerializer(serializers.ModelSerializer):
             "grade",
             "grade_point",
             "remarks",
+            "is_released",
+            "released_at",
             "created_at",
             "updated_at",
         )
@@ -74,6 +81,8 @@ class GradeSerializer(serializers.ModelSerializer):
             "grade",
             "grade_point",
             "remarks",
+            "is_released",
+            "released_at",
             "created_at",
             "updated_at",
         )

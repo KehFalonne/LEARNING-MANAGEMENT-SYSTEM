@@ -52,6 +52,15 @@ class Grade(models.Model):
         blank=True,
     )
 
+    is_released = models.BooleanField(
+        default=False,
+    )
+
+    released_at = models.DateTimeField(
+        blank=True,
+        null=True,
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True,
     )
