@@ -36,7 +36,12 @@ urlpatterns = [
     path(
         "api/courses/",
         include("courses.urls"),
-    )
+    ),
+
+    path(
+    "api/assignments/",
+    include("assignments.urls"),
+),
 ]
 
 
