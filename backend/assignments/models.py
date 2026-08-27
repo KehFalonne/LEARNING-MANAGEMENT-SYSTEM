@@ -86,7 +86,7 @@ class AssignmentSubmission(models.Model):
     )
 
     submitted_at = models.DateTimeField(
-        auto_now=True,
+        auto_now_add=True,
     )
 
     status = models.CharField(

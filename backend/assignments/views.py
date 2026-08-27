@@ -18,6 +18,8 @@ from .serializers import (
     StudentAssignmentSerializer,
     AssignmentSubmissionSerializer,
     StudentAssignmentSubmitSerializer,
+    LecturerSubmissionSerializer,
+    GradeAssignmentSubmissionSerializer,
 )
 
 class LecturerAssignmentListCreateView(APIView):
@@ -280,4 +282,172 @@ class StudentAssignmentSubmitView(APIView):
                 },
             ).data,
             status=status.HTTP_201_CREATED,
+        )
+
+
+class LecturerAssignmentSubmissionListView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, assignment_id):
+
+        if request.user.role != "LECTURER":
+            return Response(
+                {
+                    "detail": (
+                        "Only lecturers can access "
+                        "assignment submissions."
+                    )
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            lecturer = request.user.lecturer_profile
+
+        except Exception:
+            return Response(
+                {
+                    "detail": "Lecturer profile not found."
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        try:
+            assignment = (
+                Assignment.objects
+                .select_related(
+                    "course_offering__course",
+                    "lecturer__user",
+                )
+                .get(
+                    id=assignment_id,
+                    lecturer=lecturer,
+                )
+            )
+
+        except Assignment.DoesNotExist:
+            return Response(
+                {
+                    "detail": (
+                        "Assignment not found or you do "
+                        "not have permission to access it."
+                    )
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        submissions = (
+            AssignmentSubmission.objects
+            .filter(
+                assignment=assignment,
+            )
+            .select_related(
+                "student__user",
+                "assignment__course_offering__course",
+            )
+            .order_by(
+                "student__student_id",
+            )
+        )
+
+        serializer = LecturerSubmissionSerializer(
+            submissions,
+            many=True,
+        )
+
+        return Response(
+            {
+                "assignment": {
+                    "id": assignment.id,
+                    "title": assignment.title,
+                    "course_code": (
+                        assignment
+                        .course_offering
+                        .course
+                        .code
+                    ),
+                    "course_title": (
+                        assignment
+                        .course_offering
+                        .course
+                        .title
+                    ),
+                    "total_marks": assignment.total_marks,
+                    "due_date": assignment.due_date,
+                },
+                "submissions": serializer.data,
+            }
+        )
+
+
+class GradeAssignmentSubmissionView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, submission_id):
+
+        if request.user.role != "LECTURER":
+            return Response(
+                {
+                    "detail": (
+                        "Only lecturers can grade "
+                        "assignment submissions."
+                    )
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            lecturer = request.user.lecturer_profile
+
+        except Exception:
+            return Response(
+                {
+                    "detail": "Lecturer profile not found."
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        try:
+            submission = (
+                AssignmentSubmission.objects
+                .select_related(
+                    "assignment__lecturer",
+                    "assignment__course_offering__course",
+                    "student__user",
+                )
+                .get(
+                    id=submission_id,
+                    assignment__lecturer=lecturer,
+                )
+            )
+
+        except AssignmentSubmission.DoesNotExist:
+            return Response(
+                {
+                    "detail": (
+                        "Submission not found or you do "
+                        "not have permission to grade it."
+                    )
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        serializer = GradeAssignmentSubmissionSerializer(
+            submission,
+            data=request.data,
+            partial=True,
+        )
+
+        serializer.is_valid(
+            raise_exception=True,
+        )
+
+        submission = serializer.save()
+
+        return Response(
+            LecturerSubmissionSerializer(
+                submission,
+            ).data
         )

@@ -274,3 +274,99 @@ class StudentAssignmentSubmitSerializer(
             submission.save()
 
         return submission
+
+class LecturerSubmissionSerializer(
+    serializers.ModelSerializer
+):
+
+    student_id = serializers.CharField(
+        source="student.student_id",
+        read_only=True,
+    )
+
+    student_name = serializers.SerializerMethodField()
+
+    course_code = serializers.CharField(
+        source="assignment.course_offering.course.code",
+        read_only=True,
+    )
+
+    assignment_title = serializers.CharField(
+        source="assignment.title",
+        read_only=True,
+    )
+
+    class Meta:
+        model = AssignmentSubmission
+
+        fields = (
+            "id",
+            "assignment",
+            "assignment_title",
+            "course_code",
+            "student_id",
+            "student_name",
+            "file",
+            "submitted_at",
+            "status",
+            "marks",
+            "feedback",
+            "graded_at",
+        )
+
+    def get_student_name(self, obj):
+        return obj.student.user.get_full_name()
+
+
+class GradeAssignmentSubmissionSerializer(
+    serializers.ModelSerializer
+):
+
+    class Meta:
+        model = AssignmentSubmission
+
+        fields = (
+            "marks",
+            "feedback",
+        )
+
+    def validate_marks(self, value):
+
+        assignment = self.instance.assignment
+
+        if value < 0:
+            raise serializers.ValidationError(
+                "Marks cannot be negative."
+            )
+
+        if value > assignment.total_marks:
+            raise serializers.ValidationError(
+                f"Marks cannot be greater than "
+                f"{assignment.total_marks}."
+            )
+
+        return value
+
+    def update(self, instance, validated_data):
+
+        instance.marks = validated_data.get(
+            "marks",
+            instance.marks,
+        )
+
+        instance.feedback = validated_data.get(
+            "feedback",
+            instance.feedback,
+        )
+
+        instance.status = (
+            AssignmentSubmission
+            .SubmissionStatus
+            .GRADED
+        )
+
+        instance.graded_at = timezone.now()
+
+        instance.save()
+
+        return instance

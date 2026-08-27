@@ -3,7 +3,9 @@ from django.urls import path
 from .views import (
     LecturerAssignmentListCreateView,
     StudentAssignmentListView,
-    StudentAssignmentSubmitView
+    StudentAssignmentSubmitView,
+    LecturerAssignmentSubmissionListView,
+    GradeAssignmentSubmissionView,
 )
 
 urlpatterns = [
@@ -24,6 +26,18 @@ urlpatterns = [
         "student/<int:assignment_id>/submit/",
         StudentAssignmentSubmitView.as_view(),
         name="student-assignment-submit",
+    ),
+
+    path(
+        "lecturer/<int:assignment_id>/submissions/",
+        LecturerAssignmentSubmissionListView.as_view(),
+        name="lecturer-assignment-submissions",
+    ),
+
+    path(
+        "lecturer/submissions/<int:submission_id>/grade/",
+        GradeAssignmentSubmissionView.as_view(),
+        name="grade-assignment-submission",
     ),
 
 ]
